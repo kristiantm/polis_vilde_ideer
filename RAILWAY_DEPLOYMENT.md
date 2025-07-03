@@ -13,29 +13,26 @@ This guide will help you deploy Polis on Railway.com, a modern platform for depl
 The following files have been created for Railway deployment:
 
 - `railway.json` - Railway configuration
-- `Dockerfile.railway` - Main Dockerfile for Railway
-- `docker-compose.railway.yml` - Full Railway deployment (all services)
-- `docker-compose.railway-minimal.yml` - Minimal Railway deployment (core services only)
+- `Dockerfile.railway` - Server-only Dockerfile for Railway
 - `railway.env.example` - Example environment variables
 
-## Deployment Options
+## Important Note: Server-Only Deployment
 
-### Option A: Full Deployment (Recommended for Production)
+This Railway deployment focuses on running the **Polis server** only. This is the most critical component and will give you a working Polis instance with:
 
-This includes all Polis services:
-- Server (API)
-- Math service (Clojure)
-- Delphi service (Python/AI)
-- File server (static assets)
-- Nginx proxy
+✅ **Working features:**
+- User registration and authentication
+- Conversation creation and management
+- Comment submission and voting
+- Basic math calculations
+- API endpoints
 
-### Option B: Minimal Deployment (Recommended for Testing)
+⚠️ **Limited features:**
+- Advanced AI features (Delphi service)
+- Complex mathematical analysis (Math service)
+- Static file serving (File server)
 
-This includes only the core services:
-- Server (API)
-- Math service (Clojure)
-
-**Note**: The minimal deployment will have limited functionality (no AI features, simplified static file serving).
+For a full-featured deployment, you would need to run the additional services (Math, Delphi, File server) separately or use a different platform that supports multi-service deployments.
 
 ## Step 2: Deploy to Railway
 
@@ -58,11 +55,6 @@ This includes only the core services:
 
 4. Deploy your application:
    ```bash
-   # For full deployment
-   railway up
-   
-   # For minimal deployment (edit railway.json first)
-   # Change startCommand to: "docker-compose -f docker-compose.railway-minimal.yml up --build"
    railway up
    ```
 
@@ -119,7 +111,7 @@ WEBSERVER_PASS=ws-pass
 SHOULD_USE_TRANSLATION_API=false
 ```
 
-### Optional Variables (for full deployment)
+### Optional Variables
 
 Add these if you want to use specific features:
 
@@ -135,10 +127,6 @@ AWS_SECRET_ACCESS_KEY=your_aws_secret
 ANTHROPIC_API_KEY=your_anthropic_key
 GEMINI_API_KEY=your_gemini_key
 OPENAI_API_KEY=your_openai_key
-
-# S3 storage
-AWS_S3_ENDPOINT=your_s3_endpoint
-AWS_S3_BUCKET_NAME=polis-delphi
 ```
 
 ## Step 4: Add PostgreSQL Database
@@ -190,15 +178,16 @@ AWS_S3_BUCKET_NAME=polis-delphi
 
 3. **Port Issues**: 
    - Make sure `PORT` is set to 5000
-   - Check that the port is exposed in docker-compose
+   - Check that the port is exposed in Dockerfile
 
 4. **Domain Issues**: 
    - Verify all domain-related environment variables are set correctly
    - Check that `RAILWAY_PUBLIC_DOMAIN` is available
 
-5. **Memory Issues**:
-   - Railway has memory limits; consider using minimal deployment for testing
-   - Monitor resource usage in Railway dashboard
+5. **Health Check Failures**:
+   - The health check looks for `/api/v3/status` endpoint
+   - Make sure the server is starting correctly
+   - Check server logs for any startup errors
 
 ### Logs and Monitoring
 
@@ -222,7 +211,6 @@ Railway automatically scales your application based on traffic. You can also man
 1. **Free Tier**: Railway offers a generous free tier
 2. **Resource Limits**: Monitor your usage to avoid unexpected charges
 3. **Auto-scaling**: Railway automatically scales down during low traffic
-4. **Minimal Deployment**: Use minimal deployment for testing to reduce costs
 
 ## Support
 
@@ -240,11 +228,12 @@ After successful deployment:
 4. Set up CI/CD pipelines
 5. Configure custom domains and SSL certificates
 
-## Migration from Minimal to Full Deployment
+## Upgrading to Full Deployment
 
-If you started with minimal deployment and want to upgrade to full deployment:
+If you need the full Polis functionality (AI features, advanced math, etc.), you have several options:
 
-1. Update your `railway.json` to use the full docker-compose file
-2. Add the additional environment variables for Delphi and file server
-3. Redeploy your application
-4. Test all features to ensure they work correctly 
+1. **Deploy additional services separately** on Railway or other platforms
+2. **Use a different platform** that better supports multi-service deployments (like AWS ECS, Google Cloud Run, or DigitalOcean App Platform)
+3. **Run the full stack locally** for development and testing
+
+The server-only deployment gives you a solid foundation to build upon and test the core Polis functionality. 

@@ -1,27 +1,28 @@
-FROM docker:24.0.5-dind
+FROM node:20-alpine
 
 # Install necessary tools
 RUN apk add --no-cache \
-    docker-compose \
     bash \
     curl \
-    jq
+    libpq-dev
 
 # Set working directory
 WORKDIR /app
 
-# Copy the entire project
-COPY . .
+# Copy the server directory
+COPY server/ ./server/
 
-# Make scripts executable
-RUN chmod +x scripts/*.sh
+# Install and build the server
+WORKDIR /app/server
+RUN npm ci --production=false
+RUN npm run build
 
 # Expose the main port
-EXPOSE 80
+EXPOSE 5000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:80/api/v3/status || exit 1
+    CMD curl -f http://localhost:5000/api/v3/status || exit 1
 
-# Start command will be overridden by railway.json
-CMD ["docker-compose", "-f", "docker-compose.railway.yml", "up"] 
+# Start the server
+CMD ["npm", "run", "serve"] 
